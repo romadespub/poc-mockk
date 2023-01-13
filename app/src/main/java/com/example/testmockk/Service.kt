@@ -86,7 +86,3 @@ class FlowService {
 data class Item(val userId: String, val adCategory: String)
 data class Draft(val adId: String)
 data class Container(val item: Item, val draft: Draft)
-
-@VisibleForTesting(otherwise = PRIVATE)
-internal fun Item.toDraft(): Draft =
-  Draft("adId_${userId}_${adCategory}")

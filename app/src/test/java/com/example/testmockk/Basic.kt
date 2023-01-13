@@ -112,7 +112,7 @@ class Basic {
   }
 
   @Test
-  fun `argument captor`() {
+  fun `capture arguments`() {
     val expected = item.toDraft().copy(adId = "fake")
     val slot = slot<Item>()
     val service: BlockingService = mockk() {
@@ -138,7 +138,7 @@ class Basic {
   }
 
   @Test
-  fun `verify execution order, not estrictly`() {
+  fun `verify execution order, not strictly`() {
     val newItem = Item("userId2", "adCategory2")
     val service: BlockingService = mockk() {
       every { postItem(any()) } returns draft

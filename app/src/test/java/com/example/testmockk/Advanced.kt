@@ -1,10 +1,15 @@
 package com.example.testmockk
 
+import com.example.testmockk.ObjectExtension.reverseProperties
 import io.mockk.checkUnnecessaryStub
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.mockkStatic
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import io.mockk.verify
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Ignore
@@ -17,6 +22,14 @@ class Advanced {
 
   @Before
   fun setup() {
+  }
+
+  @After
+  fun tearDown() {
+    // Ensure you disable all static mocks to avoid issues
+    unmockkStatic(Item::toDraft)
+    unmockkStatic(Item::toDraft2)
+    unmockkStatic("com.example.testmockk.ExtensionsKt")
   }
 
   @Test
@@ -64,6 +77,7 @@ class Advanced {
   }
 
   // Handle with care!!!
+  // If you need to use this feature you are doing something wrong probably
   @Test
   fun `mock private functions`() {
     val expected = Item(item.userId, "zaca boom!!!!")
@@ -77,6 +91,81 @@ class Advanced {
       spy.reset(item)
       spy["boom"]
     }
+  }
+
+  @Test
+  fun `mock class level extension function`() {
+    val userId = "1234"
+    val adCategory = "fake_category"
+    val expected = Item(userId, adCategory)
+    with (mockk<ClassExtension>()) {
+      every { Item(userId, adCategory).reverseProperties() } returns expected
+
+      // You have to check inside ClassExtension scope
+      val result = Item(userId, adCategory).reverseProperties()
+
+      assertEquals(expected, result)
+    }
+  }
+
+  @Test
+  fun `mock object level extension function`() {
+    val userId = "1234"
+    val adCategory = "fake_category"
+    val expected = Item(userId, adCategory)
+    mockkObject(ObjectExtension)
+    with(ObjectExtension) {
+      every { Item(userId, adCategory).reverseProperties() } returns expected
+    }
+
+    // As objects are single static instances you can check outside ObjectExtension scope
+    val result = Item(userId, adCategory).reverseProperties()
+
+    assertEquals(expected, result)
+  }
+
+  @Test
+  fun `mock top level extension functions`() {
+    // Declare full file extension function to enable mocking
+    mockkStatic("com.example.testmockk.ExtensionsKt")
+
+    val userId = "1234"
+    val adCategory = "fake_category"
+    val expected = "new_ad_id"
+    val expected2 = "adId_${userId}_${adCategory}"
+    val item = Item(userId, adCategory)
+    every { any<Item>().toDraft() } returns Draft(expected)
+
+    val result = item.toDraft().adId
+    val result2 = item.toDraft2().adId
+
+    assertEquals(expected, result)
+    assertEquals(expected2, result2)
+
+    // Ensure you disable all static mocks to avoid issues
+  }
+
+  @Test
+  fun `mock top level extension functions, other way`() {
+    val userId = "1234"
+    val adCategory = "fake_category"
+    val expected = "new_ad_id"
+    val expected2 = "adId_${userId}_${adCategory}"
+    val item = Item(userId, adCategory)
+
+    // Declare any extension function to enable mocking on all file
+    mockkStatic(Item::toDraft)
+    every { any<Item>().toDraft() } returns Draft(expected)
+    // uncomment below lne, will fail the second assert
+    // every { any<Item>().toDraft2() } returns Draft(expected)
+
+    val result = item.toDraft().adId // mocked extension
+    val result2 = item.toDraft2().adId // not mocked extension
+
+    assertEquals(expected, result)
+    assertEquals(expected2, result2)
+
+    // Ensure you disable all static mocks to avoid issues
   }
 
 }
