@@ -54,7 +54,7 @@ class Advanced {
   }
 
   @Test
-  @Ignore
+  @Ignore("remove ignore and will fail due to unnecessary stub")
   fun `check unnecessary stubbing`() {
     val expected = draft
     val service: BlockingService = mockk() {
