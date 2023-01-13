@@ -30,7 +30,7 @@ class Coroutine {
   @Test
   fun `basic mock`() {
     val expected = draft
-    val service: BlockingService = mockk() {
+    val service = mockk<BlockingService>() {
       coEvery { postItem(any()) } returns expected
     }
 
@@ -42,7 +42,7 @@ class Coroutine {
   @Test
   fun `mock returns lambda (of suspended function) using input values`() {
     val expected = item.toDraft()
-    val service: BlockingService = mockk() {
+    val service = mockk<BlockingService>() {
       coEvery { postItem(any()) } coAnswers { CoroutineService().postItem(arg(0)) }
     }
 
@@ -53,7 +53,7 @@ class Coroutine {
 
   @Test
   fun `verify call function with args`() {
-    val service: BlockingService = mockk() {
+    val service = mockk<BlockingService>() {
       every { postItem(any()) } returns draft
     }
 
