@@ -15,7 +15,7 @@ import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 
-class FlowServiceTest {
+class Flows {
 
   private val item = Item("userId", "adCategory")
   private val draft = Draft("adId")

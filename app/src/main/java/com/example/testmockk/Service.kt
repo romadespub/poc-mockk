@@ -1,10 +1,14 @@
 package com.example.testmockk
 
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.internal.operators.observable.ObservableFromArray
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onStart
+import java.util.concurrent.TimeUnit
 import kotlin.experimental.ExperimentalTypeInference
 
 private const val DELAY_IN_MS = 500L
@@ -70,18 +74,38 @@ class FlowService {
 
   fun sync(): Flow<Draft> =
     flow {
-      var counter = 0
-      while(counter < 3) {
-        emit(Draft(counter.toString()))
-        delay(REFRESH_DELAY_IN_MS)
-        counter += 1
-      }
+      emit(Draft("0"))
+      delay(REFRESH_DELAY_IN_MS)
+      emit(Draft("1"))
+      delay(REFRESH_DELAY_IN_MS)
+      emit(Draft("2"))
+      delay(REFRESH_DELAY_IN_MS)
     }.onStart { delay(DELAY_IN_MS) }
 }
 
-/*interface RxService {
-  fun postItem(item: Item): Single<Draft>
-}*/
+class RxService {
+
+  private val service = Service()
+
+  fun postItem(item: Item): Single<Draft> =
+    Single
+      .just(service.postItem(item))
+      .delay(DELAY_IN_MS, TimeUnit.MILLISECONDS)
+
+  fun putItem(item: Item): Observable<Item> =
+    Observable
+      .just(service.putItem(item))
+      .delay(DELAY_IN_MS, TimeUnit.MILLISECONDS)
+
+  fun sync(): Observable<Draft> =
+    ObservableFromArray(
+      arrayOf(
+        Draft("0"),
+        Draft("1"),
+        Draft("2")
+      )
+    ).delay(DELAY_IN_MS, TimeUnit.MILLISECONDS)
+}
 
 data class Item(val userId: String, val adCategory: String)
 data class Draft(val adId: String)
