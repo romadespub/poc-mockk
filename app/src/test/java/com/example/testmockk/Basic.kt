@@ -44,7 +44,7 @@ class Basic {
   @Test
   fun `happy path`() {
     val expected = item.toDraft()
-    val service = BlockingService()
+    val service = Service()
 
     val result = service.postItem(item)
 
@@ -54,7 +54,7 @@ class Basic {
   @Test
   fun `basic mock`() {
     val expected = draft
-    val service: BlockingService = mockk() {
+    val service: Service = mockk() {
       every { postItem(any()) } returns expected
     }
 
@@ -69,7 +69,7 @@ class Basic {
       draft,
       item.toDraft(),
     )
-    val service: BlockingService = mockk() {
+    val service: Service = mockk() {
       every { postItem(any()) } returns draft andThen item.toDraft()
     }
 
@@ -87,7 +87,7 @@ class Basic {
       draft,
       item.toDraft(),
     )
-    val service: BlockingService = mockk() {
+    val service: Service = mockk() {
       every { postItem(any()) } returnsMany expected
     }
 
@@ -102,7 +102,7 @@ class Basic {
   @Test
   fun `mock returns lambda using input values`() {
     val expected = item.toDraft()
-    val service: BlockingService = mockk() {
+    val service: Service = mockk() {
       every { postItem(any()) } answers { arg<Item>(0).toDraft() }
     }
 
@@ -115,7 +115,7 @@ class Basic {
   fun `capture arguments`() {
     val expected = item.toDraft().copy(adId = "fake")
     val slot = slot<Item>()
-    val service: BlockingService = mockk() {
+    val service: Service = mockk() {
       every { postItem(capture(slot)) } answers { slot.captured.toDraft().copy(adId = "fake") }
     }
 
@@ -126,7 +126,7 @@ class Basic {
 
   @Test
   fun `verify call function with args`() {
-    val service: BlockingService = mockk() {
+    val service: Service = mockk() {
       every { postItem(any()) } returns draft
     }
 
@@ -140,7 +140,7 @@ class Basic {
   @Test
   fun `verify execution order, not strictly`() {
     val newItem = Item("userId2", "adCategory2")
-    val service: BlockingService = mockk() {
+    val service: Service = mockk() {
       every { postItem(any()) } returns draft
       every { deleteItem(any()) } just Runs
     }
@@ -158,7 +158,7 @@ class Basic {
   @Test
   fun `verify execution order, strictly`() {
     val newItem = Item("userId2", "adCategory2")
-    val service: BlockingService = mockk() {
+    val service: Service = mockk() {
       every { postItem(any()) } returns draft
       every { deleteItem(any()) } just Runs
     }
@@ -176,7 +176,7 @@ class Basic {
 
   @Test
   fun `avoid to mock all behaviours`() {
-    val service: BlockingService = mockk(relaxed = true)
+    val service: Service = mockk(relaxed = true)
 
     service.postItem(item)
 
@@ -187,7 +187,7 @@ class Basic {
 
   @Test(expected = RuntimeException::class)
   fun `mock an exception`(): Unit {
-    val service: BlockingService = mockk() {
+    val service: Service = mockk() {
       every { postItem(any()) } throws RuntimeException()
     }
     service.postItem(item)
@@ -195,13 +195,13 @@ class Basic {
 
   @Test(expected = RuntimeException::class)
   fun `failed path`(): Unit {
-    val service = BlockingService()
+    val service = Service()
     service.putItem(item)
   }
 
   @Test
   fun `returning unit happy path`() {
-    val service = BlockingService()
+    val service = Service()
 
     val result = service.deleteItem(item)
 
@@ -210,7 +210,7 @@ class Basic {
 
   @Test
   fun `mock Unit`() {
-    val service: BlockingService = mockk() {
+    val service: Service = mockk() {
       every { deleteItem(any()) } just Runs
     }
 
@@ -221,7 +221,7 @@ class Basic {
 
   @Test
   fun `dependency was not called at all`() {
-    val service: BlockingService = mockk()
+    val service: Service = mockk()
 
     verify {
       service wasNot Called

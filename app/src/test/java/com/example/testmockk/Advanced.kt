@@ -38,7 +38,7 @@ class Advanced {
       Item("id", "id"),
       item.toDraft(),
     )
-    val spy = spyk(BlockingService())
+    val spy = spyk(Service())
     every { spy.putItem(any()) } answers { expected[0] as Item }
 
     val result = listOf(
@@ -70,7 +70,7 @@ class Advanced {
   @Ignore("remove ignore and will fail due to unnecessary stub")
   fun `check unnecessary stubbing`() {
     val expected = draft
-    val service: BlockingService = mockk() {
+    val service: Service = mockk() {
       every { postItem(any()) } returns expected
     }
     checkUnnecessaryStub(service)
@@ -81,7 +81,7 @@ class Advanced {
   @Test
   fun `mock private functions`() {
     val expected = Item(item.userId, "zaca boom!!!!")
-    val spy = spyk<BlockingService>(recordPrivateCalls = true)
+    val spy = spyk<Service>(recordPrivateCalls = true)
     every { spy["boom"]() } returns expected.adCategory
 
     val result = spy.reset(item)

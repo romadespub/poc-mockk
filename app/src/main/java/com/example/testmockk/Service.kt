@@ -1,21 +1,21 @@
 package com.example.testmockk
 
-import androidx.annotation.VisibleForTesting
-import androidx.annotation.VisibleForTesting.PRIVATE
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onStart
+import kotlin.experimental.ExperimentalTypeInference
 
 private const val DELAY_IN_MS = 500L
 private const val REFRESH_DELAY_IN_MS = 1000L
 
-class BlockingService {
+internal class Service {
   fun postItem(item: Item): Draft {
     return item.toDraft()
   }
 
-  fun putItem(item: Item): Item {
+  fun putItem(@Suppress("UNUSED_PARAMETER")item: Item): Item {
     throw RuntimeException("putItem failed message")
   }
 
@@ -29,59 +29,59 @@ class BlockingService {
   private fun boom() = "no category!!"
 }
 
-/*interface RxService {
-  fun postItem(item: Item): Single<Draft>
-}*/
-
 class CoroutineService {
 
-  private val blockingService = BlockingService()
+  private val service = Service()
 
   suspend fun postItem(item: Item): Draft {
     delay(DELAY_IN_MS)
-    return blockingService.postItem(item)
+    return service.postItem(item)
   }
 
   suspend fun putItem(item: Item): Item {
     delay(DELAY_IN_MS)
-    return blockingService.putItem(item)
+    return service.putItem(item)
   }
 
   suspend fun deleteItem(item: Item): Unit {
     delay(DELAY_IN_MS)
-    return blockingService.deleteItem(item)
+    return service.deleteItem(item)
   }
 }
 
 class FlowService {
 
-  private val blockingService = BlockingService()
+  private val service = Service()
 
   fun postItem(item: Item): Flow<Draft> =
     flow {
-      emit(blockingService.postItem(item))
+      emit(service.postItem(item))
     }.onStart { delay(DELAY_IN_MS) }
 
   fun putItem(item: Item): Flow<Item> =
     flow {
-      emit(blockingService.putItem(item))
+      emit(service.putItem(item))
     }.onStart { delay(DELAY_IN_MS) }
 
   fun deleteItem(item: Item): Flow<Unit> =
     flow {
-      emit(blockingService.deleteItem(item))
+      emit(service.deleteItem(item))
     }.onStart { delay(DELAY_IN_MS) }
 
   fun sync(): Flow<Draft> =
     flow {
       var counter = 0
-      while(counter < 5) {
+      while(counter < 3) {
         emit(Draft(counter.toString()))
         delay(REFRESH_DELAY_IN_MS)
         counter += 1
       }
     }.onStart { delay(DELAY_IN_MS) }
 }
+
+/*interface RxService {
+  fun postItem(item: Item): Single<Draft>
+}*/
 
 data class Item(val userId: String, val adCategory: String)
 data class Draft(val adId: String)
